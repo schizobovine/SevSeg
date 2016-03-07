@@ -132,10 +132,18 @@ void SevSeg::begin(byte hardwareConfig, byte numDigitsIn,
 // There are 2 versions of this function, with the choice depending on the
 // location of the current-limiting resistors.
 
-#if !(RESISTORS_ON_SEGMENTS)
-//For resistors on *digits* we will cycle through all 8 segments (7 + period), turning on the *digits* as appropriate
-//for a given segment, before moving on to the next segment
+// Without args, calls with current class var state
 void SevSeg::refreshDisplay(){
+  this->refreshDisplay(ledOnTime);
+}
+
+void SevSeg::refreshDisplay(int micros){
+
+#if !(RESISTORS_ON_SEGMENTS)
+
+  // For resistors on *digits* we will cycle through all 8 segments (7 +
+  // period), turning on the *digits* as appropriate for a given segment,
+  // before moving on to the next segment
   for (byte segmentNum=0 ; segmentNum < 8 ; segmentNum++) {
 
     // Illuminate the required digits for this segment
@@ -147,7 +155,7 @@ void SevSeg::refreshDisplay(){
     }
 
     //Wait with lights on (to increase brightness)
-    delayMicroseconds(ledOnTime); 
+    delayMicroseconds(micros); 
 
     //Turn all lights off
     for (byte digitNum=0 ; digitNum < numDigits ; digitNum++){
@@ -155,12 +163,12 @@ void SevSeg::refreshDisplay(){
     }
     digitalWrite(segmentPins[segmentNum], segmentOff);
   }
-}
 
 #else
-//For resistors on *segments* we will cycle through all __ # of digits, turning on the *segments* as appropriate
-//for a given digit, before moving on to the next digit
-void SevSeg::refreshDisplay(){
+
+  // For resistors on *segments* we will cycle through all __ # of digits,
+  // turning on the *segments* as appropriate for a given digit, before moving on
+  // to the next digit
   for (byte digitNum=0 ; digitNum < numDigits ; digitNum++){
 
     // Illuminate the required segments for this digit
@@ -172,7 +180,7 @@ void SevSeg::refreshDisplay(){
     }
 
     //Wait with lights on (to increase brightness)
-    delayMicroseconds(ledOnTime);
+    delayMicroseconds(micros);
 
     //Turn all lights off
     for (byte segmentNum=0 ; segmentNum < 8 ; segmentNum++) {
@@ -180,8 +188,10 @@ void SevSeg::refreshDisplay(){
     }
     digitalWrite(digitPins[digitNum], digitOff);
   }
-}
+
 #endif
+
+}
 
 
 // setBrightness
