@@ -58,7 +58,7 @@ const long SevSeg::powersOf10[] = {
 SevSeg::SevSeg()
 {
   // Initial value
-  ledOnTime = 2000; // Corresponds to a brightness of 100
+  ledOnTime = 1; // Corresponds to a brightness of 0
   numDigits = 0;
 }
 
