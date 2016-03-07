@@ -51,7 +51,7 @@ public:
   SevSeg();
 
   void refreshDisplay();
-  void begin(byte hardwareConfig, byte numDigitsIn, byte digitPinsIn[], byte segmentPinsIn[]);
+  void begin(byte hardwareConfig, byte numDigitsIn, const byte digitPinsIn[], const byte segmentPinsIn[]);
   void setBrightness(int brightnessIn); // A number from 0..100
 
   void setNumber(long numToShow, byte decPlaces);

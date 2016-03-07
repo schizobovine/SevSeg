@@ -68,7 +68,7 @@ SevSeg::SevSeg()
 // Saves the input pin numbers to the class and sets up the pins to be used.
 
 void SevSeg::begin(byte hardwareConfig, byte numDigitsIn, 
-                  byte digitPinsIn[], byte segmentPinsIn[]) {
+                  const byte digitPinsIn[], const byte segmentPinsIn[]) {
                     
   numDigits = numDigitsIn;
   //Limit the max number of digits to prevent overflowing
