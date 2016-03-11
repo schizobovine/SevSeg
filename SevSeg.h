@@ -44,6 +44,51 @@
 #define NP_COMMON_CATHODE 1
 #define NP_COMMON_ANODE 0
 
+#ifdef __AVR__
+#include <avr/pgmspace.h>
+#elif defined(ESP8266)
+#include <pgmspace.h>
+#else
+#error "Archietecture unrecognized, how I PROGMEM?"
+#endif
+
+#define BLANK 16 // Must match with 'digitCodeMap'
+#define DASH  17
+
+const byte digitCodeMap[] PROGMEM = {
+ //Pgfedcba <-segments on
+  B00111111, // 0
+  B00000110, // 1
+  B01011011, // 2
+  B01001111, // 3
+  B01100110, // 4
+  B01101101, // 5
+  B01111101, // 6
+  B00000111, // 7
+  B01111111, // 8
+  B01101111, // 9
+  B01110111, // A
+  B00000000, // b
+  B00000000, // c
+  B00000000, // d
+  B00000000, // E
+  B00000000, // F
+  B00000000, // BLANK
+  B01000000, // DASH
+};
+
+const long powersOf10[] PROGMEM = {
+  1,          // 10^0
+  10,         // 10^1
+  100,        // 10^2
+  1000,       // 10^3
+  10000,      // 10^4
+  100000,     // 10^5
+  1000000,    // 10^6
+  10000000,   // 10^7
+  100000000,  // 10^8
+  1000000000, // 10^9
+};
 
 class SevSeg
 {
@@ -74,7 +119,7 @@ private:
   byte numDigits;
   byte digitCodes[MAXNUMDIGITS];
   int ledOnTime;
-  const static long powersOf10[10];
+  //const static long powersOf10[10];
 
 };
 
