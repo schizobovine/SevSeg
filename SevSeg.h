@@ -21,13 +21,12 @@
  See the included readme for instructions.
  */
 
-// If you use current-limiting resistors on your segment pins instead of the
-// digit pins, then change the '0' in the line below to a '1'
-#define MAXNUMDIGITS 4 //Increase this number to support larger displays
 
+#ifndef __SEVSEG_H
+#define __SEVSEG_H
 
-#ifndef SevSeg_h
-#define SevSeg_h
+#define MAXNUMDIGITS 8 // Increase this number to support larger displays
+                       // NB: other arrays will need redefined
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
@@ -43,15 +42,8 @@
 #define NP_COMMON_CATHODE 1
 #define NP_COMMON_ANODE 0
 
-#ifdef __AVR__
-#include <avr/pgmspace.h>
-#elif defined(ESP8266)
-#include <pgmspace.h>
-#else
-#error "Archietecture unrecognized, how I PROGMEM?"
-#endif
-
-#define BLANK 16 // Must match with 'digitCodeMap'
+// Must match with 'digitCodeMap'
+#define BLANK 16
 #define DASH  17
 
 class SevSeg
@@ -68,9 +60,6 @@ public:
   void setDigits(byte values[], size_t num_values);
 
 private:
-  //void setNewNum(long numToShow, byte decPlaces);
-  //void findDigits(long numToShow, byte decPlaces, byte nums[]);
-  //void setDigitCodes(byte nums[], byte decPlaces);
 
   boolean digitOn,digitOff,segmentOn,segmentOff;
   byte segmentPins[8];
