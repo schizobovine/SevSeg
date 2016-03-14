@@ -65,9 +65,10 @@ const byte digitCodeMap[] = {
 SevSeg::SevSeg()
 {
   // Initial value
-  this->ledOnTime = 1; // Corresponds to a brightness of 0
   this->numDigits = 0;
   this->pos = 0;
+  this->skip_cycles = 0;
+  this->max_pos = NUM_SEGMENTS; // Max brightness
 }
 
 
@@ -176,19 +177,23 @@ void SevSeg::illuminateNext() {
   byte digitNum;
 
   // Disable previous digits and segment
-  digitalWrite(segmentPins[this->pos], this->segmentOff);
-  for (digitNum=0; digitNum < this->numDigits; digitNum++) {
-    digitalWrite(digitPins[digitNum], this->digitOff);
+  if (this->pos < NUM_SEGMENTS) {
+    digitalWrite(segmentPins[this->pos], this->segmentOff);
+    for (digitNum=0; digitNum < this->numDigits; digitNum++) {
+      digitalWrite(digitPins[digitNum], this->digitOff);
+    }
   }
 
-  // Advance to next segment
-  this->pos = (this->pos + 1) % NUM_SEGMENTS;
+  // Advance to next segment or empty cycle
+  this->pos = (this->pos + 1) % this->max_pos;
 
   // Illuminate the required digits for this segment
-  digitalWrite(segmentPins[this->pos], this->segmentOn);
-  for (digitNum=0; digitNum < this->numDigits; digitNum++) {
-    if (this->digitCodes[digitNum] & (1 << this->pos)) {
-      digitalWrite(digitPins[digitNum], this->digitOn);
+  if (this->pos < NUM_SEGMENTS) {
+    digitalWrite(segmentPins[this->pos], this->segmentOn);
+    for (digitNum=0; digitNum < this->numDigits; digitNum++) {
+      if (this->digitCodes[digitNum] & (1 << this->pos)) {
+        digitalWrite(digitPins[digitNum], this->digitOn);
+      }
     }
   }
 
@@ -197,9 +202,9 @@ void SevSeg::illuminateNext() {
 // setBrightness
 /******************************************************************************/
 
-void SevSeg::setBrightness(int brightness){
-  brightness = constrain(brightness, 0, 100);
-  this->ledOnTime = map(brightness, 0, 100, 1, 2000);
+void SevSeg::setBrightness(byte brightness){
+  this->skip_cycles = map(brightness, 0, 255, MAX_SKIP_CYCLES, 0);
+  this->max_pos = this->skip_cycles + NUM_SEGMENTS;
 }
 
 // setDigit

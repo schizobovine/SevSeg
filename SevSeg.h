@@ -48,13 +48,16 @@
 #define BLANK 16
 #define DASH  17
 
+// Maxium number of skipped cycles, corresponding to min brightness
+#define MAX_SKIP_CYCLES 15
+
 class SevSeg
 {
 public:
   SevSeg();
 
   void begin(byte hardwareConfig, byte numDigitsIn, const byte digitPinsIn[], const byte segmentPinsIn[]);
-  void setBrightness(int brightnessIn); // A number from 0..100
+  void setBrightness(byte brightnessIn); // A number from 0..100
 
   void setDigit(byte digitNum, byte value);
   void setDigits(byte values[], size_t num_values);
@@ -70,8 +73,9 @@ private:
   byte numDigits;
   byte *digitPins;
   byte *digitCodes;
-  int ledOnTime;
   byte pos;
+  byte max_pos;
+  byte skip_cycles;
 
 };
 
