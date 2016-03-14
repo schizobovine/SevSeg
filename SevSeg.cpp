@@ -80,6 +80,7 @@ SevSeg::SevSeg()
   // Initial value
   this->ledOnTime = 1; // Corresponds to a brightness of 0
   this->numDigits = 0;
+  this->pos = 0;
 }
 
 
@@ -94,37 +95,40 @@ void SevSeg::begin(byte hardwareConfig, byte numDigitsIn,
 
   //Limit the max number of digits to prevent overflowing
   if (this->numDigits > MAXNUMDIGITS) this->numDigits = MAXNUMDIGITS;
+
+  // Allocate memory for anode/cathode arrays
   this->digitPins = new byte[numDigits];
   this->digitCodes = new byte[numDigits];
+  this->segmentPins = new byte[NUM_SEGMENTS];
 
   switch (hardwareConfig){
 
   case 0: // Common cathode
-    digitOn = LOW;
-    segmentOn = HIGH;
+    this->digitOn = LOW;
+    this->segmentOn = HIGH;
     break;
 
   case 1: // Common anode
-    digitOn = HIGH;
-    segmentOn = LOW;
+    this->digitOn = HIGH;
+    this->segmentOn = LOW;
     break;
 
   case 2: // With active-high, low-side switches (most commonly N-type FETs)
-    digitOn = HIGH;
-    segmentOn = HIGH;
+    this->digitOn = HIGH;
+    this->segmentOn = HIGH;
     break;
 
   case 3: // With active low, high side switches (most commonly P-type FETs)
-    digitOn = LOW;
-    segmentOn = LOW;
+    this->digitOn = LOW;
+    this->segmentOn = LOW;
     break;
   }
 
-  digitOff = !digitOn;
-  segmentOff = !segmentOn;
+  this->digitOff = !this->digitOn;
+  this->segmentOff = !this->segmentOn;
 
   // Save the input pin numbers to library variables
-  for (byte segmentNum = 0 ; segmentNum < 8 ; segmentNum++) {
+  for (byte segmentNum = 0 ; segmentNum < NUM_SEGMENTS ; segmentNum++) {
     segmentPins[segmentNum] = segmentPinsIn[segmentNum];
   }
 
@@ -135,12 +139,12 @@ void SevSeg::begin(byte hardwareConfig, byte numDigitsIn,
   // Set the pins as outputs, and turn them off
   for (byte digit=0 ; digit < this->numDigits ; digit++) {
     pinMode(digitPins[digit], OUTPUT);
-    digitalWrite(digitPins[digit], digitOff);
+    digitalWrite(digitPins[digit], this->digitOff);
   }
 
-  for (byte segmentNum=0 ; segmentNum < 8 ; segmentNum++) {
+  for (byte segmentNum=0 ; segmentNum < NUM_SEGMENTS ; segmentNum++) {
     pinMode(segmentPins[segmentNum], OUTPUT);
-    digitalWrite(segmentPins[segmentNum], segmentOff);
+    digitalWrite(segmentPins[segmentNum], this->segmentOff);
   }
 
   // Initialize display blank
@@ -169,13 +173,13 @@ void SevSeg::refreshDisplay(int micros){
   // For resistors on *digits* we will cycle through all 8 segments (7 +
   // period), turning on the *digits* as appropriate for a given segment,
   // before moving on to the next segment
-  for (byte segmentNum=0 ; segmentNum < 8 ; segmentNum++) {
+  for (byte segmentNum=0 ; segmentNum < NUM_SEGMENTS ; segmentNum++) {
 
     // Illuminate the required digits for this segment
-    digitalWrite(segmentPins[segmentNum], segmentOn);
+    digitalWrite(segmentPins[segmentNum], this->segmentOn);
     for (byte digitNum=0 ; digitNum < this->numDigits ; digitNum++){
       if (this->digitCodes[digitNum] & (1 << segmentNum)) { // Check a single bit
-        digitalWrite(digitPins[digitNum], digitOn);
+        digitalWrite(digitPins[digitNum], this->digitOn);
       }
     }
 
@@ -184,9 +188,62 @@ void SevSeg::refreshDisplay(int micros){
 
     //Turn all lights off
     for (byte digitNum=0 ; digitNum < this->numDigits ; digitNum++){
-      digitalWrite(digitPins[digitNum], digitOff);
+      digitalWrite(digitPins[digitNum], this->digitOff);
     }
-    digitalWrite(segmentPins[segmentNum], segmentOff);
+    digitalWrite(segmentPins[segmentNum], this->segmentOff);
+  }
+
+}
+
+// setDigitOn
+/******************************************************************************/
+// Enable a given digit
+
+void SevSeg::setDigitOn(byte digitNum) {
+  byte segments = this->digitCodes[digitNum];
+  for (byte segmentNum=0; segmentNum<NUM_SEGMENTS; segmentNum++) {
+    if (segments & 1) {
+      digitalWrite(segmentPins[segmentNum], this->segmentOn);
+    }
+    segments >>= 1;
+  }
+  digitalWrite(digitPins[digitNum], this->digitOn);
+}
+
+// setDigitOff
+/******************************************************************************/
+// Disable a given digit
+
+void SevSeg::setDigitOff(byte digitNum) {
+  digitalWrite(digitPins[digitNum], this->digitOff);
+  for (byte segmentNum=0; segmentNum<NUM_SEGMENTS; segmentNum++) {
+    digitalWrite(segmentPins[segmentNum], this->segmentOff);
+  }
+}
+
+// illuminateNext
+/******************************************************************************/
+// Activates a single segment on the display, deactivating any other segment.
+// Useful for calling from a timer interrupt for more consistent brightness.
+
+void SevSeg::illuminateNext() {
+  byte digitNum;
+
+  // Disable previous digits and segment
+  digitalWrite(segmentPins[this->pos], this->segmentOff);
+  for (digitNum=0; digitNum < this->numDigits; digitNum++) {
+    digitalWrite(digitPins[digitNum], this->digitOff);
+  }
+
+  // Advance to next segment
+  this->pos = (this->pos + 1) % NUM_SEGMENTS;
+
+  // Illuminate the required digits for this segment
+  digitalWrite(segmentPins[this->pos], this->segmentOn);
+  for (digitNum=0; digitNum < this->numDigits; digitNum++) {
+    if (this->digitCodes[digitNum] & (1 << this->pos)) {
+      digitalWrite(digitPins[digitNum], this->digitOn);
+    }
   }
 
 }

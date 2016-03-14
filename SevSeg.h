@@ -28,6 +28,8 @@
 #define MAXNUMDIGITS 8 // Increase this number to support larger displays
                        // NB: other arrays will need redefined
 
+#define NUM_SEGMENTS 8 // Bugged me that this was a magic number
+
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #else
@@ -53,20 +55,25 @@ public:
 
   void refreshDisplay();
   void refreshDisplay(int micros);
+  void illuminateNext();
   void begin(byte hardwareConfig, byte numDigitsIn, const byte digitPinsIn[], const byte segmentPinsIn[]);
   void setBrightness(int brightnessIn); // A number from 0..100
 
   void setDigit(byte digitNum, byte value);
   void setDigits(byte values[], size_t num_values);
 
+  void setDigitOn(byte digitNum);
+  void setDigitOff(byte digitNum);
+
 private:
 
-  boolean digitOn,digitOff,segmentOn,segmentOff;
-  byte segmentPins[8];
+  boolean digitOn, digitOff, segmentOn, segmentOff;
+  byte *segmentPins;
   byte numDigits;
   byte *digitPins;
   byte *digitCodes;
   int ledOnTime;
+  byte pos;
 
 };
 
