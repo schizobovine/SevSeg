@@ -60,19 +60,6 @@ const byte digitCodeMap[] = {
   B1000000, // DASH
 };
 
-const long powersOf10[] = {
-  1,          // 10^0
-  10,         // 10^1
-  100,        // 10^2
-  1000,       // 10^3
-  10000,      // 10^4
-  100000,     // 10^5
-  1000000,    // 10^6
-  10000000,   // 10^7
-  100000000,  // 10^8
-  1000000000, // 10^9
-};
-
 // SevSeg
 /******************************************************************************/
 SevSeg::SevSeg()
@@ -150,47 +137,6 @@ void SevSeg::begin(byte hardwareConfig, byte numDigitsIn,
   // Initialize display blank
   for (byte digit=0 ; digit < this->numDigits ; digit++) {
     setDigit(digit, BLANK);
-  }
-
-}
-
-
-// refreshDisplay
-/******************************************************************************/
-// Flashes the output on the seven segment display.
-// This is achieved by cycling through all segments and digits, turning the
-// required segments on as specified by the array 'digitCodes'.
-// There are 2 versions of this function, with the choice depending on the
-// location of the current-limiting resistors.
-
-// Without args, calls with current class var state
-void SevSeg::refreshDisplay(){
-  this->refreshDisplay(this->ledOnTime);
-}
-
-void SevSeg::refreshDisplay(int micros){
-
-  // For resistors on *digits* we will cycle through all 8 segments (7 +
-  // period), turning on the *digits* as appropriate for a given segment,
-  // before moving on to the next segment
-  for (byte segmentNum=0 ; segmentNum < NUM_SEGMENTS ; segmentNum++) {
-
-    // Illuminate the required digits for this segment
-    digitalWrite(segmentPins[segmentNum], this->segmentOn);
-    for (byte digitNum=0 ; digitNum < this->numDigits ; digitNum++){
-      if (this->digitCodes[digitNum] & (1 << segmentNum)) { // Check a single bit
-        digitalWrite(digitPins[digitNum], this->digitOn);
-      }
-    }
-
-    //Wait with lights on (to increase brightness)
-    delayMicroseconds(micros); 
-
-    //Turn all lights off
-    for (byte digitNum=0 ; digitNum < this->numDigits ; digitNum++){
-      digitalWrite(digitPins[digitNum], this->digitOff);
-    }
-    digitalWrite(segmentPins[segmentNum], this->segmentOff);
   }
 
 }

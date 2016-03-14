@@ -53,15 +53,13 @@ class SevSeg
 public:
   SevSeg();
 
-  void refreshDisplay();
-  void refreshDisplay(int micros);
-  void illuminateNext();
   void begin(byte hardwareConfig, byte numDigitsIn, const byte digitPinsIn[], const byte segmentPinsIn[]);
   void setBrightness(int brightnessIn); // A number from 0..100
 
   void setDigit(byte digitNum, byte value);
   void setDigits(byte values[], size_t num_values);
 
+  void illuminateNext();
   void setDigitOn(byte digitNum);
   void setDigitOff(byte digitNum);
 
